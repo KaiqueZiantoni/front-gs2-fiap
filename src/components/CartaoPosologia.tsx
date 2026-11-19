@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { cadastrarRegistro, confirmarDose, listarRegistros } from '../services/registros'
 import type { Posologia, RegistroDose } from '../types'
-import { formatarDataHora } from '../utils/datas'
+import { doseDeHoje, formatarDataHora } from '../utils/datas'
 import Botao from './Botao'
 import Mensagem from './Mensagem'
 
@@ -13,7 +13,6 @@ interface CartaoPosologiaProps {
 }
 
 const nomesPeriodo = { MANHA: 'Manhã', ALMOCO: 'Almoço', TARDE: 'Tarde', NOITE: 'Noite' }
-const horasPeriodo = { MANHA: '08', ALMOCO: '12', TARDE: '16', NOITE: '20' }
 const nomesStatus = { SEM_REGISTRO: 'Sem registro', REGISTRADO: 'Tomou', NAO_TOMOU: 'Não tomou' }
 
 // Um remedio da rotina do paciente, com as doses e o botao "Tomei".
@@ -39,14 +38,8 @@ function CartaoPosologia({ posologia, nomeMedicamento, aoMudar }: CartaoPosologi
   // Cria a dose de hoje no horario do periodo (manha 8h, almoco 12h, tarde 16h, noite 20h).
   async function criarDoseDeHoje() {
     setErro('')
-    const hoje = new Date()
-    const ano = hoje.getFullYear()
-    const mes = String(hoje.getMonth() + 1).padStart(2, '0')
-    const dia = String(hoje.getDate()).padStart(2, '0')
-    const dataPrevista = ano + '-' + mes + '-' + dia + 'T' + horasPeriodo[posologia.periodo] + ':00:00'
-
     try {
-      await cadastrarRegistro(posologia.id, dataPrevista)
+      await cadastrarRegistro(posologia.id, doseDeHoje(posologia.periodo))
       await carregar()
       aoMudar()
     } catch (e) {
