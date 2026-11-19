@@ -1,3 +1,5 @@
+import Figura from './Figura'
+
 interface BotaoOuvirProps {
   texto: string
 }
@@ -18,7 +20,7 @@ function BotaoOuvir({ texto }: BotaoOuvirProps) {
       onClick={falar}
       className="inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-amber-600 bg-amber-100 px-4 py-1 font-bold text-slate-900 hover:bg-amber-200"
     >
-      <span aria-hidden="true">🔊</span> Ouvir
+      <Figura nome="som" tamanho={26} /> Ouvir
     </button>
   )
 }
