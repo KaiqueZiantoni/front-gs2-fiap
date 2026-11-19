@@ -19,7 +19,7 @@ O sistema nunca sugere dose, troca ou suspensão de remédio.
 
 ## Links
 
-- **GitHub:** [PREENCHER: link do repositório]
+- **GitHub:** https://github.com/KaiqueZiantoni/front-gs2-fiap
 - **Vercel:** [PREENCHER: link do site publicado]
 - **API Java (Render):** https://tomei-doutor-api.onrender.com
 - **Vídeo (YouTube):** [PREENCHER: link do vídeo]
