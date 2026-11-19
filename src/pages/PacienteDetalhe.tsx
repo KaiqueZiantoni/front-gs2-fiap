@@ -124,13 +124,6 @@ function PacienteDetalhe() {
         <Titulo texto={paciente.nome} subtitulo={'Nascimento: ' + formatarData(paciente.dataNascimento)} />
       </div>
 
-      <Link
-        to={'/pacientes/' + pacienteId + '/modo-paciente'}
-        className="mb-8 flex min-h-14 items-center justify-center rounded-2xl bg-green-700 px-6 text-xl font-bold text-white hover:bg-green-800 sm:inline-flex"
-      >
-        Abrir o modo paciente
-      </Link>
-
       <section className="mb-8">
         <h2 className="mb-3 text-2xl font-bold">Resumo para a consulta</h2>
         <ResumoConsulta posologias={posologias} nomeDoMedicamento={nomeDoMedicamento} versao={versao} />

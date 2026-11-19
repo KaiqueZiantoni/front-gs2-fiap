@@ -6,10 +6,10 @@ import Faq from './pages/Faq'
 import Home from './pages/Home'
 import Integrantes from './pages/Integrantes'
 import Medicamentos from './pages/Medicamentos'
-import ModoPaciente from './pages/ModoPaciente'
 import NaoEncontrada from './pages/NaoEncontrada'
 import PacienteDetalhe from './pages/PacienteDetalhe'
 import Pacientes from './pages/Pacientes'
+import Prototipo from './pages/Prototipo'
 import Sobre from './pages/Sobre'
 
 function App() {
@@ -25,7 +25,7 @@ function App() {
           <Route path="/contato" element={<Contato />} />
           <Route path="/pacientes" element={<Pacientes />} />
           <Route path="/pacientes/:id" element={<PacienteDetalhe />} />
-          <Route path="/pacientes/:id/modo-paciente" element={<ModoPaciente />} />
+          <Route path="/prototipo" element={<Prototipo />} />
           <Route path="/medicamentos" element={<Medicamentos />} />
           <Route path="*" element={<NaoEncontrada />} />
         </Routes>
