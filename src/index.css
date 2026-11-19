@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+/* Letra maior no site todo: o publico do Tomei, Doutor le com dificuldade. */
+html {
+  font-size: 18px;
+}
