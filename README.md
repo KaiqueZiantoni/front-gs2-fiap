@@ -20,7 +20,7 @@ O sistema nunca sugere dose, troca ou suspensão de remédio.
 ## Links
 
 - **GitHub:** https://github.com/KaiqueZiantoni/front-gs2-fiap
-- **Vercel:** [PREENCHER: link do site publicado]
+- **Vercel:** https://front-gs2-fiap.vercel.app
 - **API Java (Render):** https://tomei-doutor-api.onrender.com
 - **Vídeo (YouTube):** [PREENCHER: link do vídeo]
 
@@ -33,7 +33,8 @@ O sistema nunca sugere dose, troca ou suspensão de remédio.
 
 ## Contato
 
-[PREENCHER: e-mail ou outro contato do grupo]
+- Kaique Ziantoni: [GitHub](https://github.com/KaiqueZiantoni) · [LinkedIn](https://www.linkedin.com/in/kaiqueziantoni/)
+- Silas Angare: [GitHub](https://github.com/SilasAngare1) · [LinkedIn](https://www.linkedin.com/in/silas-angare-pedroso-de-oliveira-55004430a/)
 
 ## Estrutura de pastas
 
@@ -43,6 +44,7 @@ src
 ├── pages        uma página por rota
 ├── services     chamadas à API com fetch (api.ts e um arquivo por recurso)
 ├── types        interfaces TypeScript dos dados da API
+├── assets       fotos dos integrantes
 ├── data         textos fixos (integrantes e perguntas frequentes)
 ├── utils        funções de apoio (formatação de datas)
 ├── App.tsx      rotas da aplicação
