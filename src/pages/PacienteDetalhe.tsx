@@ -6,6 +6,7 @@ import Campo from '../components/Campo'
 import Carregando from '../components/Carregando'
 import CartaoPosologia from '../components/CartaoPosologia'
 import Mensagem from '../components/Mensagem'
+import ResumoConsulta from '../components/ResumoConsulta'
 import Titulo from '../components/Titulo'
 import { listarMedicamentos } from '../services/medicamentos'
 import { buscarPaciente } from '../services/pacientes'
@@ -23,6 +24,8 @@ function PacienteDetalhe() {
   const [medicamentos, setMedicamentos] = useState<Medicamento[]>([])
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
+  // Aumenta a cada dose criada ou confirmada, para o resumo da consulta recarregar.
+  const [versao, setVersao] = useState(0)
 
   // Formulario de novo remedio na rotina
   const [medicamentoId, setMedicamentoId] = useState('')
@@ -121,6 +124,11 @@ function PacienteDetalhe() {
         <Titulo texto={paciente.nome} subtitulo={'Nascimento: ' + formatarData(paciente.dataNascimento)} />
       </div>
 
+      <section className="mb-8">
+        <h2 className="mb-3 text-2xl font-bold">Resumo para a consulta</h2>
+        <ResumoConsulta posologias={posologias} nomeDoMedicamento={nomeDoMedicamento} versao={versao} />
+      </section>
+
       <div className="grid gap-8 lg:grid-cols-2">
         <section>
           <h2 className="mb-3 text-2xl font-bold">Rotina de remédios</h2>
@@ -131,6 +139,7 @@ function PacienteDetalhe() {
                 key={posologia.id}
                 posologia={posologia}
                 nomeMedicamento={nomeDoMedicamento(posologia.medicamentoId)}
+                aoMudar={() => setVersao(versao + 1)}
               />
             ))}
           </div>

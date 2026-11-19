@@ -8,6 +8,8 @@ import Mensagem from './Mensagem'
 interface CartaoPosologiaProps {
   posologia: Posologia
   nomeMedicamento: string
+  // Avisa a pagina quando uma dose e criada ou confirmada.
+  aoMudar: () => void
 }
 
 const nomesPeriodo = { MANHA: 'Manhã', ALMOCO: 'Almoço', TARDE: 'Tarde', NOITE: 'Noite' }
@@ -15,7 +17,7 @@ const horasPeriodo = { MANHA: '08', ALMOCO: '12', TARDE: '16', NOITE: '20' }
 const nomesStatus = { SEM_REGISTRO: 'Sem registro', REGISTRADO: 'Tomou', NAO_TOMOU: 'Não tomou' }
 
 // Um remedio da rotina do paciente, com as doses e o botao "Tomei".
-function CartaoPosologia({ posologia, nomeMedicamento }: CartaoPosologiaProps) {
+function CartaoPosologia({ posologia, nomeMedicamento, aoMudar }: CartaoPosologiaProps) {
   const [registros, setRegistros] = useState<RegistroDose[]>([])
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
@@ -46,6 +48,7 @@ function CartaoPosologia({ posologia, nomeMedicamento }: CartaoPosologiaProps) {
     try {
       await cadastrarRegistro(posologia.id, dataPrevista)
       await carregar()
+      aoMudar()
     } catch (e) {
       setErro((e as Error).message)
     }
@@ -56,6 +59,7 @@ function CartaoPosologia({ posologia, nomeMedicamento }: CartaoPosologiaProps) {
     try {
       await confirmarDose(registroId, 'PACIENTE')
       await carregar()
+      aoMudar()
     } catch (e) {
       setErro((e as Error).message)
     }
