@@ -1,20 +1,26 @@
 import { Link } from 'react-router-dom'
 import BotaoOuvir from '../components/BotaoOuvir'
+import Figura from '../components/Figura'
+import type { NomeFigura } from '../components/Figura'
 
-const passos = [
+const passos: { titulo: string; texto: string; figura: NomeFigura }[] = [
   {
+    figura: 'caixa',
     titulo: '1. Lembra na hora',
     texto: 'O aviso chega no horário da dose, com um botão grande: "Tomei".',
   },
   {
+    figura: 'pessoa',
     titulo: '2. Insiste e chama ajuda',
     texto: 'Sem registro, o app lembra de novo em 30 minutos. Em 90 minutos, avisa o cuidador.',
   },
   {
+    figura: 'termometro',
     titulo: '3. Olha o clima',
     texto: 'Em dias de calor, frio ou chuva forte, o paciente recebe um aviso de atenção.',
   },
   {
+    figura: 'medico',
     titulo: '4. Leva para a consulta',
     texto: 'O médico recebe um relatório curto, só com o que fugiu do normal.',
   },
@@ -61,9 +67,14 @@ function Home() {
         <h2 className="mb-4 text-2xl font-bold text-slate-900">Como funciona</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           {passos.map((passo) => (
-            <article key={passo.titulo} className="rounded-2xl border-2 border-slate-300 bg-white p-6">
-              <h3 className="text-xl font-bold">{passo.titulo}</h3>
-              <p className="mt-2 text-slate-600">{passo.texto}</p>
+            <article key={passo.titulo} className="flex items-center gap-4 rounded-2xl border-2 border-slate-300 bg-white p-6">
+              <div className="shrink-0">
+                <Figura nome={passo.figura} tamanho={80} />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold">{passo.titulo}</h3>
+                <p className="mt-2 text-slate-600">{passo.texto}</p>
+              </div>
             </article>
           ))}
         </div>
