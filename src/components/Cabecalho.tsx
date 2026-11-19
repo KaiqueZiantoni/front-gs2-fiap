@@ -3,6 +3,7 @@ import { Link, NavLink } from 'react-router-dom'
 
 const links = [
   { para: '/', texto: 'Início' },
+  { para: '/prototipo', texto: 'Protótipo' },
   { para: '/pacientes', texto: 'Pacientes' },
   { para: '/medicamentos', texto: 'Remédios' },
   { para: '/sobre', texto: 'Sobre' },

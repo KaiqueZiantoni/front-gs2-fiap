@@ -32,10 +32,10 @@ function Home() {
         </p>
         <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
           <Link
-            to="/pacientes"
+            to="/prototipo"
             className="flex min-h-14 items-center justify-center rounded-2xl bg-green-700 px-6 text-xl font-bold text-white hover:bg-green-800"
           >
-            Ver pacientes
+            Testar o protótipo
           </Link>
           <Link
             to="/sobre"
