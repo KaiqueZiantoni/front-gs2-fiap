@@ -64,6 +64,7 @@ src
 | `/contato` | Contato (formulário com validação) |
 | `/pacientes` | Pacientes: lista, cadastro e remoção |
 | `/pacientes/:id` | Paciente: resumo para a consulta, rotina de remédios, doses e botão "Tomei" (rota com parâmetro) |
+| `/pacientes/:id/modo-paciente` | Modo paciente: as telas do aplicativo, com busca do remédio pelo código de barras e botão "Tomei" |
 | `/medicamentos` | Remédios: lista e cadastro |
 
 ## Integração com a API Java
@@ -82,6 +83,14 @@ src
 As telas mostram carregamento, erro da requisição e lista vazia. A mensagem de erro exibida é a que a API devolve.
 
 A API fica em um plano gratuito, que dorme após 15 minutos sem uso. A primeira chamada pode levar até um minuto.
+
+## Modo paciente
+
+Demonstra o passo a passo do aplicativo com os dados reais da API: buscar o remédio pelo código de barras, confirmar, escolher o período e a quantidade, apertar "Tomei" e ver o horário registrado.
+
+- Para testar a busca, use um código do catálogo, por exemplo `2000000000015` (Losartana 50 mg) ou `2000000000060` (Metformina 850 mg).
+- O botão "Usar a câmera" aparece só nos navegadores que leem código de barras (Chrome no Android). Nos outros, o código é digitado.
+- Alerta de clima e aviso ao cuidador fazem parte do aplicativo, mas não têm rota na API Java e por isso não aparecem aqui.
 
 ## Acessibilidade
 
