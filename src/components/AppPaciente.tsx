@@ -1,23 +1,35 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
-import BotaoOuvir from '../components/BotaoOuvir'
-import Carregando from '../components/Carregando'
-import LeitorCamera, { navegadorLeCodigo } from '../components/LeitorCamera'
-import Mensagem from '../components/Mensagem'
 import { listarMedicamentos } from '../services/medicamentos'
-import { buscarPaciente } from '../services/pacientes'
 import { cadastrarPosologia, listarPosologias } from '../services/posologias'
 import { cadastrarRegistro, confirmarDose, listarRegistros } from '../services/registros'
-import type { Medicamento, Paciente, Periodo, RegistroDose } from '../types'
-import { doseDeHoje } from '../utils/datas'
+import type { Medicamento, Paciente, Periodo, Posologia, RegistroDose } from '../types'
+import { doseDeHoje, formatarDataHora } from '../utils/datas'
+import BotaoOuvir from './BotaoOuvir'
+import Carregando from './Carregando'
+import LeitorCamera, { navegadorLeCodigo } from './LeitorCamera'
+import Mensagem from './Mensagem'
+import ResumoConsulta from './ResumoConsulta'
 
-// Telas do modo paciente, na ordem em que aparecem.
+interface AppPacienteProps {
+  paciente: Paciente
+}
+
+// Abas do rodape do aplicativo.
+type Aba = 'hoje' | 'clima' | 'medico' | 'cuidador'
+// Telas dentro da aba "Hoje", na ordem em que aparecem.
 type Tela = 'inicio' | 'codigo' | 'confirmar' | 'quando' | 'registrado'
 
 interface DosePendente {
   registro: RegistroDose
   remedio: string
 }
+
+const abas: { valor: Aba; nome: string }[] = [
+  { valor: 'hoje', nome: 'Hoje' },
+  { valor: 'clima', nome: 'Clima' },
+  { valor: 'medico', nome: 'Vou ao médico' },
+  { valor: 'cuidador', nome: 'Cuidador' },
+]
 
 const periodos: { valor: Periodo; nome: string; hora: string }[] = [
   { valor: 'MANHA', nome: 'Manhã', hora: '8 horas' },
@@ -30,18 +42,22 @@ const botaoVerde =
   'flex min-h-16 w-full items-center justify-center rounded-2xl bg-green-700 px-6 text-2xl font-bold text-white hover:bg-green-800 disabled:opacity-50'
 const botaoBranco =
   'flex min-h-16 w-full items-center justify-center rounded-2xl border-2 border-slate-400 bg-white px-6 text-2xl font-bold hover:bg-slate-100'
+const botaoRoxo =
+  'flex min-h-16 w-full items-center justify-center rounded-2xl bg-violet-700 px-6 text-2xl font-bold text-white hover:bg-violet-800'
 
-// Demonstracao das telas do aplicativo do paciente, com os dados reais da API.
-function ModoPaciente() {
-  const { id } = useParams()
-  const pacienteId = Number(id)
-
+// As telas do aplicativo do paciente, dentro de uma moldura de celular.
+// As abas Hoje, Vou ao medico e Cuidador usam os dados reais da API.
+function AppPaciente({ paciente }: AppPacienteProps) {
+  const [aba, setAba] = useState<Aba>('hoje')
   const [tela, setTela] = useState<Tela>('inicio')
-  const [paciente, setPaciente] = useState<Paciente | null>(null)
   const [medicamentos, setMedicamentos] = useState<Medicamento[]>([])
+  const [posologias, setPosologias] = useState<Posologia[]>([])
   const [pendentes, setPendentes] = useState<DosePendente[]>([])
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
+  const [aviso, setAviso] = useState('')
+  // Aumenta a cada mudanca nas doses, para o relatorio recarregar.
+  const [versao, setVersao] = useState(0)
 
   // Cadastro de um remedio novo
   const [codigo, setCodigo] = useState('')
@@ -54,16 +70,26 @@ function ModoPaciente() {
   // Hora da ultima dose confirmada, para a tela "Registrado"
   const [horaRegistro, setHoraRegistro] = useState('')
 
+  const primeiroNome = paciente.nome.split(' ')[0]
+
+  function nomeDoMedicamento(idProcurado: number) {
+    for (const medicamento of medicamentos) {
+      if (medicamento.id === idProcurado) {
+        return medicamento.nome
+      }
+    }
+    return 'Remédio'
+  }
+
   async function carregar() {
     setErro('')
     try {
-      const dadosPaciente = await buscarPaciente(pacienteId)
       const catalogo = await listarMedicamentos()
-      const posologias = await listarPosologias(pacienteId)
+      const rotina = await listarPosologias(paciente.id)
 
       // Junta as doses que ainda estao sem registro.
       const novasPendentes: DosePendente[] = []
-      for (const posologia of posologias) {
+      for (const posologia of rotina) {
         let nome = 'Remédio'
         for (const medicamento of catalogo) {
           if (medicamento.id === posologia.medicamentoId) {
@@ -78,9 +104,10 @@ function ModoPaciente() {
         }
       }
 
-      setPaciente(dadosPaciente)
       setMedicamentos(catalogo)
+      setPosologias(rotina)
       setPendentes(novasPendentes)
+      setVersao((atual) => atual + 1)
     } catch (e) {
       setErro((e as Error).message)
     } finally {
@@ -90,7 +117,13 @@ function ModoPaciente() {
 
   useEffect(() => {
     carregar()
-  }, [pacienteId])
+  }, [paciente.id])
+
+  function trocarAba(nova: Aba) {
+    setErro('')
+    setAviso('')
+    setAba(nova)
+  }
 
   // Procura o codigo de barras no catalogo de remedios que veio da API.
   function procurar(codigoLido: string) {
@@ -116,7 +149,7 @@ function ModoPaciente() {
     setErro('')
     setSalvando(true)
     try {
-      const posologia = await cadastrarPosologia(pacienteId, {
+      const posologia = await cadastrarPosologia(paciente.id, {
         medicamentoId: encontrado.id,
         periodo,
         quantidadeDose: quantidade,
@@ -136,13 +169,20 @@ function ModoPaciente() {
     }
   }
 
-  async function tomei(registroId: number) {
+  // Botao "Tomei" (paciente) e "confirmei" (cuidador).
+  async function confirmar(registroId: number, autor: 'PACIENTE' | 'CUIDADOR') {
     setErro('')
+    setAviso('')
     try {
-      const registro = await confirmarDose(registroId, 'PACIENTE')
+      const registro = await confirmarDose(registroId, autor)
       // dataConfirmacao vem como 2026-11-19T08:10:00. Fica so a hora: 08:10
-      setHoraRegistro(registro.dataConfirmacao ? registro.dataConfirmacao.substring(11, 16) : '')
-      setTela('registrado')
+      const hora = registro.dataConfirmacao ? registro.dataConfirmacao.substring(11, 16) : ''
+      if (autor === 'PACIENTE') {
+        setHoraRegistro(hora)
+        setTela('registrado')
+      } else {
+        setAviso('Dose confirmada pelo cuidador às ' + hora + '.')
+      }
       await carregar()
     } catch (e) {
       setErro((e as Error).message)
@@ -153,27 +193,22 @@ function ModoPaciente() {
     return <Carregando />
   }
 
-  if (paciente === null) {
-    return <Mensagem tipo="erro" texto={erro || 'Paciente não encontrado.'} />
-  }
-
-  const primeiroNome = paciente.nome.split(' ')[0]
-
   return (
-    <div className="mx-auto max-w-md">
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <Link to={'/pacientes/' + pacienteId} className="font-semibold text-green-700 underline">
-          ← Sair do modo paciente
-        </Link>
+    <div className="mx-auto max-w-md overflow-hidden rounded-3xl border-4 border-slate-800 bg-white">
+      <div className="flex items-center justify-between border-b-2 border-slate-200 bg-slate-50 px-4 py-3">
+        <span className={'text-xl font-bold ' + (aba === 'cuidador' ? 'text-violet-700' : 'text-green-700')}>
+          Tomei, Doutor{aba === 'cuidador' ? ' · cuidador' : ''}
+        </span>
       </div>
 
-      <div className="space-y-4 rounded-3xl border-4 border-slate-800 bg-white p-5">
+      <div className="min-h-96 space-y-4 p-5">
         {erro && <Mensagem tipo="erro" texto={erro} />}
+        {aviso && <Mensagem tipo="sucesso" texto={aviso} />}
 
-        {tela === 'inicio' && pendentes.length === 0 && (
+        {aba === 'hoje' && tela === 'inicio' && pendentes.length === 0 && (
           <div className="space-y-4 text-center">
             <BotaoOuvir texto={'Olá, ' + primeiroNome + '. Você não tem dose para registrar agora.'} />
-            <h1 className="text-3xl font-bold">Olá, {primeiroNome}.</h1>
+            <h2 className="text-3xl font-bold">Olá, {primeiroNome}.</h2>
             <p className="text-xl text-slate-600">Você não tem dose para registrar agora.</p>
             <button type="button" className={botaoVerde} onClick={() => setTela('codigo')}>
               Adicionar remédio
@@ -181,18 +216,26 @@ function ModoPaciente() {
           </div>
         )}
 
-        {tela === 'inicio' && pendentes.length > 0 && (
+        {aba === 'hoje' && tela === 'inicio' && pendentes.length > 0 && (
           <div className="space-y-4 text-center">
             <BotaoOuvir texto={'Hora do remédio. ' + pendentes[0].remedio + '. Aperte Tomei.'} />
-            <p className="text-xl font-bold text-slate-600">Hora do remédio</p>
-            <h1 className="text-3xl font-bold">{pendentes[0].remedio}</h1>
-            <p className="text-xl text-slate-600">Previsto para {pendentes[0].registro.dataPrevista.substring(11, 16)}</p>
+            <p className="text-xl font-bold text-slate-600">
+              Hora do remédio · {formatarDataHora(pendentes[0].registro.dataPrevista)}
+            </p>
+            <h2 className="text-3xl font-bold">{pendentes[0].remedio}</h2>
             <button
               type="button"
-              onClick={() => tomei(pendentes[0].registro.id)}
+              onClick={() => confirmar(pendentes[0].registro.id, 'PACIENTE')}
               className="flex min-h-40 w-full items-center justify-center rounded-3xl bg-green-700 text-5xl font-bold text-white shadow-[0_6px_0_#14532d] hover:bg-green-800"
             >
               Tomei
+            </button>
+            <button
+              type="button"
+              className={botaoBranco}
+              onClick={() => setAviso('Tudo bem. A dose continua sem registro e o app lembra de novo.')}
+            >
+              Ainda não
             </button>
             <button type="button" className={botaoBranco} onClick={() => setTela('codigo')}>
               Adicionar remédio
@@ -200,10 +243,10 @@ function ModoPaciente() {
           </div>
         )}
 
-        {tela === 'codigo' && (
+        {aba === 'hoje' && tela === 'codigo' && (
           <div className="space-y-4">
             <BotaoOuvir texto="Digite os números do código de barras da caixa do remédio." />
-            <h1 className="text-3xl font-bold">Qual é o código de barras da caixa?</h1>
+            <h2 className="text-3xl font-bold">Qual é o código de barras da caixa?</h2>
 
             {cameraLigada && <LeitorCamera aoLer={procurar} />}
 
@@ -235,10 +278,10 @@ function ModoPaciente() {
           </div>
         )}
 
-        {tela === 'confirmar' && encontrado !== null && (
+        {aba === 'hoje' && tela === 'confirmar' && encontrado !== null && (
           <div className="space-y-4 text-center">
             <BotaoOuvir texto={'É este remédio? ' + encontrado.nome} />
-            <h1 className="text-3xl font-bold">É este remédio?</h1>
+            <h2 className="text-3xl font-bold">É este remédio?</h2>
             <div className="rounded-2xl border-2 border-slate-300 bg-slate-50 p-5">
               <p className="text-3xl font-bold">{encontrado.nome}</p>
               <p className="text-xl text-slate-600">{encontrado.principioAtivo}</p>
@@ -254,10 +297,10 @@ function ModoPaciente() {
           </div>
         )}
 
-        {tela === 'quando' && encontrado !== null && (
+        {aba === 'hoje' && tela === 'quando' && encontrado !== null && (
           <div className="space-y-4">
             <BotaoOuvir texto="Quando você toma? Quantos de cada vez? Marque como o médico receitou." />
-            <h1 className="text-3xl font-bold">Quando você toma?</h1>
+            <h2 className="text-3xl font-bold">Quando você toma?</h2>
             <div className="grid grid-cols-2 gap-3">
               {periodos.map((item) => (
                 <button
@@ -276,7 +319,7 @@ function ModoPaciente() {
               ))}
             </div>
 
-            <h2 className="text-2xl font-bold">Quantos de cada vez?</h2>
+            <h3 className="text-2xl font-bold">Quantos de cada vez?</h3>
             <p className="text-lg text-slate-600">Marque como o médico receitou.</p>
             <div className="flex gap-3">
               {[1, 2, 3].map((numero) => (
@@ -301,7 +344,7 @@ function ModoPaciente() {
           </div>
         )}
 
-        {tela === 'registrado' && (
+        {aba === 'hoje' && tela === 'registrado' && (
           <div className="space-y-4 text-center">
             <BotaoOuvir texto={'Registrado às ' + horaRegistro + '.'} />
             <div
@@ -310,15 +353,94 @@ function ModoPaciente() {
             >
               ✓
             </div>
-            <h1 className="text-3xl font-bold">Registrado às {horaRegistro}.</h1>
+            <h2 className="text-3xl font-bold">Registrado às {horaRegistro}.</h2>
             <button type="button" className={botaoBranco} onClick={() => setTela('inicio')}>
               Voltar
             </button>
           </div>
         )}
+
+        {aba === 'clima' && (
+          <div className="space-y-4">
+            <Mensagem
+              tipo="aviso"
+              texto="Tela de exemplo. O aviso de clima faz parte do aplicativo, mas ainda não vem da API."
+            />
+            <BotaoOuvir texto="Vai fazer muito calor. Beba mais água. Fique na sombra das 10 às 16. Se sentir tontura, procure ajuda. Este aviso não muda a sua receita." />
+            <div className="space-y-3 rounded-3xl border-4 border-red-600 bg-red-50 p-4">
+              <p className="font-bold text-red-700">AMANHÃ · 35 °C</p>
+              <h2 className="text-3xl font-bold">Vai fazer muito calor.</h2>
+              <p className="text-xl">Para quem toma o seu remédio, calor forte pede cuidado.</p>
+              <ul className="list-disc space-y-1 pl-6 text-xl font-bold">
+                <li>Beba mais água.</li>
+                <li>Fique na sombra das 10 às 16.</li>
+                <li>Se sentir tontura, procure ajuda.</li>
+              </ul>
+            </div>
+            <button type="button" className={botaoVerde} onClick={() => trocarAba('hoje')}>
+              Entendi
+            </button>
+            <p className="text-slate-600">
+              Este aviso não muda a sua receita. Na dúvida, fale com o médico ou o farmacêutico.
+            </p>
+          </div>
+        )}
+
+        {aba === 'medico' && (
+          <div className="space-y-4">
+            <BotaoOuvir texto="Relatório para o médico. Mostra as doses registradas e o que fugiu do normal." />
+            <p className="font-bold text-slate-600">PARA O MÉDICO</p>
+            <h2 className="text-3xl font-bold">{paciente.nome}</h2>
+            <ResumoConsulta posologias={posologias} nomeDoMedicamento={nomeDoMedicamento} versao={versao} />
+            <p className="text-slate-600">Doses sem registro não contam como tomadas.</p>
+          </div>
+        )}
+
+        {aba === 'cuidador' && (
+          <div className="space-y-4">
+            <BotaoOuvir texto={'Aviso ao cuidador. Doses de ' + primeiroNome + ' que ficaram sem registro.'} />
+            <p className="text-slate-600">No aplicativo, este aviso chega depois de 90 minutos sem registro.</p>
+            {pendentes.length === 0 && (
+              <Mensagem tipo="aviso" texto={primeiroNome + ' não tem dose sem registro agora.'} />
+            )}
+            {pendentes.map((pendente) => (
+              <div
+                key={pendente.registro.id}
+                className="space-y-3 rounded-3xl border-4 border-violet-600 bg-violet-50 p-4"
+              >
+                <h2 className="text-2xl font-bold">{primeiroNome} não registrou a dose.</h2>
+                <p className="text-2xl font-bold">{pendente.remedio}</p>
+                <p className="text-xl text-slate-600">
+                  prevista para {formatarDataHora(pendente.registro.dataPrevista)}
+                </p>
+                <button
+                  type="button"
+                  className={botaoRoxo}
+                  onClick={() => confirmar(pendente.registro.id, 'CUIDADOR')}
+                >
+                  Tomou, confirmei
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
+
+      <nav className="grid grid-cols-4 border-t-2 border-slate-200 bg-slate-50" aria-label="Abas do aplicativo">
+        {abas.map((item) => (
+          <button
+            key={item.valor}
+            type="button"
+            aria-pressed={aba === item.valor}
+            onClick={() => trocarAba(item.valor)}
+            className={'min-h-14 px-1 py-2 text-sm font-bold ' + (aba === item.valor ? 'text-green-700' : 'text-slate-600')}
+          >
+            {item.nome}
+          </button>
+        ))}
+      </nav>
     </div>
   )
 }
 
-export default ModoPaciente
+export default AppPaciente
