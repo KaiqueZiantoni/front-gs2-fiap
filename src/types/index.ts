@@ -80,5 +80,7 @@ export interface Integrante {
   nome: string
   rm: string
   turma: string
-  github?: string
+  foto: string
+  github: string
+  linkedin: string
 }
