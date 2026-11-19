@@ -8,7 +8,7 @@ import BotaoOuvir from './BotaoOuvir'
 import Carregando from './Carregando'
 import Figura from './Figura'
 import type { NomeFigura } from './Figura'
-import LeitorCamera, { navegadorLeCodigo } from './LeitorCamera'
+import LeitorCamera from './LeitorCamera'
 import Mensagem from './Mensagem'
 import ResumoConsulta from './ResumoConsulta'
 
@@ -285,17 +285,24 @@ function AppPaciente({ paciente }: AppPacienteProps) {
 
         {aba === 'hoje' && tela === 'codigo' && (
           <div className="space-y-4">
-            <BotaoOuvir texto="Digite os números do código de barras da caixa do remédio." />
-            <div className="flex justify-center">
-              <Figura nome="caixa" tamanho={130} />
-            </div>
-            <h2 className="text-3xl font-bold">Qual é o código de barras da caixa?</h2>
+            <BotaoOuvir texto="Aponte a câmera para o código de barras da caixa do remédio. Se preferir, digite os números." />
+            <h2 className="text-3xl font-bold">Aponte a câmera para o código de barras da caixa.</h2>
 
             {cameraLigada && <LeitorCamera aoLer={procurar} />}
+            {!cameraLigada && (
+              <div className="flex justify-center">
+                <Figura nome="caixa" tamanho={130} />
+              </div>
+            )}
+            {!cameraLigada && (
+              <button type="button" className={botaoVerde + ' gap-3'} onClick={() => setCameraLigada(true)}>
+                <Figura nome="camera" tamanho={40} cor="#ffffff" /> Abrir a câmera
+              </button>
+            )}
 
             <div>
               <label htmlFor="codigo" className="mb-1 block text-xl font-semibold">
-                Números do código
+                Ou digite os números do código
               </label>
               <input
                 id="codigo"
@@ -307,15 +314,17 @@ function AppPaciente({ paciente }: AppPacienteProps) {
               />
             </div>
 
-            <button type="button" className={botaoVerde} onClick={() => procurar(codigo.trim())}>
+            <button type="button" className={botaoBranco} onClick={() => procurar(codigo.trim())}>
               Buscar
             </button>
-            {navegadorLeCodigo() && !cameraLigada && (
-              <button type="button" className={botaoBranco + ' gap-3'} onClick={() => setCameraLigada(true)}>
-                <Figura nome="camera" tamanho={40} /> Usar a câmera
-              </button>
-            )}
-            <button type="button" className={botaoBranco} onClick={() => setTela('inicio')}>
+            <button
+              type="button"
+              className={botaoBranco}
+              onClick={() => {
+                setCameraLigada(false)
+                setTela('inicio')
+              }}
+            >
               Voltar
             </button>
           </div>
