@@ -5,7 +5,17 @@ import Carregando from '../components/Carregando'
 import Mensagem from '../components/Mensagem'
 import Titulo from '../components/Titulo'
 import { listarPacientes } from '../services/pacientes'
+import codigoLosartana from '../assets/codigos/losartana.png'
+import codigoMetformina from '../assets/codigos/metformina.png'
+import codigoSinvastatina from '../assets/codigos/sinvastatina.png'
 import type { Paciente } from '../types'
+
+// Codigos de barras de tres remedios do catalogo, para testar a camera.
+const codigosDeTeste = [
+  { nome: 'Losartana 50 mg', imagem: codigoLosartana },
+  { nome: 'Metformina 850 mg', imagem: codigoMetformina },
+  { nome: 'Sinvastatina 20 mg', imagem: codigoSinvastatina },
+]
 
 // Protótipo funcional: as telas do aplicativo, usando os dados reais da API.
 function Prototipo() {
@@ -68,6 +78,21 @@ function Prototipo() {
             </Botao>
           </div>
           <AppPaciente paciente={escolhido} />
+
+          <section className="mx-auto max-w-md rounded-2xl border-2 border-slate-300 bg-white p-5">
+            <h2 className="text-xl font-bold">Códigos de barras para testar a câmera</h2>
+            <p className="mt-1 text-slate-600">
+              Abra o protótipo em outro aparelho e aponte a câmera para um destes códigos.
+            </p>
+            <ul className="mt-3 space-y-4">
+              {codigosDeTeste.map((codigo) => (
+                <li key={codigo.nome} className="text-center">
+                  <img src={codigo.imagem} alt={'Código de barras de ' + codigo.nome} className="mx-auto w-full max-w-xs" />
+                  <p className="font-bold">{codigo.nome}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
         </div>
       )}
     </div>
