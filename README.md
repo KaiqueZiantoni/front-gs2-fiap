@@ -18,6 +18,7 @@ O sistema nunca sugere dose, troca ou suspensão de remédio.
 - Tailwind CSS
 - React Router DOM
 - Fetch API para as chamadas HTTP (sem Axios)
+- ZXing (`@zxing/browser`) para ler código de barras pela câmera
 
 ## Links
 
@@ -96,7 +97,8 @@ A aba **Protótipo** mostra as telas do aplicativo dentro de uma moldura de celu
 | Cuidador | Doses sem registro, com o botão "Tomou, confirmei" | API |
 
 - Para testar a busca, use um código do catálogo, por exemplo `2000000000015` (Losartana 50 mg) ou `2000000000060` (Metformina 850 mg).
-- O botão "Usar a câmera" aparece só nos navegadores que leem código de barras (Chrome no Android). Nos outros, o código é digitado.
+- O botão "Abrir a câmera" lê o código de barras da caixa com a biblioteca ZXing. Se a câmera não abrir, o código pode ser digitado.
+- Abaixo do aplicativo há três códigos de barras do catálogo, para apontar a câmera de outro aparelho.
 
 ## Acessibilidade
 
