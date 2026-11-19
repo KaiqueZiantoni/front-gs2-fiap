@@ -116,7 +116,7 @@ function Pacientes() {
 
   return (
     <div>
-      <Titulo texto="Pacientes" subtitulo="Dados lidos e gravados na API do Tomei, Doutor." />
+      <Titulo texto="Pacientes" subtitulo="Abra um paciente para ver a rotina de remédios e o resumo para a consulta." />
 
       <div className="grid gap-8 lg:grid-cols-2">
         <section>
