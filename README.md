@@ -6,7 +6,9 @@ Aplicação web do **Tomei, Doutor**, entrega da disciplina **Front-End Design E
 
 ## Objetivo
 
-O Tomei, Doutor é um lembrete de remédio para pessoas idosas e pacientes crônicos que leem pouco. Este site mostra a solução e permite cadastrar pacientes e remédios, montar a rotina de cada paciente e registrar as doses com o botão "Tomei". Todos os dados são lidos e gravados na API Java do grupo.
+O Tomei, Doutor acompanha o tratamento entre uma consulta e outra. Ele lembra a dose na hora, registra o que aconteceu, chama o cuidador quando a dose fica sem registro e leva para o médico um relatório curto, só com o que fugiu do normal. O público são pessoas idosas e pacientes crônicos que leem com dificuldade.
+
+Este site apresenta a solução e permite cadastrar pacientes e remédios, montar a rotina de cada paciente, registrar as doses com o botão "Tomei" e ver o resumo para a consulta. Todos os dados são lidos e gravados na API Java do grupo.
 
 O sistema nunca sugere dose, troca ou suspensão de remédio.
 
@@ -61,7 +63,7 @@ src
 | `/faq` | Dúvidas frequentes |
 | `/contato` | Contato (formulário com validação) |
 | `/pacientes` | Pacientes: lista, cadastro e remoção |
-| `/pacientes/:id` | Rotina do paciente: remédios, doses e botão "Tomei" (rota com parâmetro) |
+| `/pacientes/:id` | Paciente: resumo para a consulta, rotina de remédios, doses e botão "Tomei" (rota com parâmetro) |
 | `/medicamentos` | Remédios: lista e cadastro |
 
 ## Integração com a API Java
