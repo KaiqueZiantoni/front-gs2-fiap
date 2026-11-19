@@ -6,6 +6,8 @@ import type { Medicamento, Paciente, Periodo, Posologia, RegistroDose } from '..
 import { doseDeHoje, formatarDataHora } from '../utils/datas'
 import BotaoOuvir from './BotaoOuvir'
 import Carregando from './Carregando'
+import Figura from './Figura'
+import type { NomeFigura } from './Figura'
 import LeitorCamera, { navegadorLeCodigo } from './LeitorCamera'
 import Mensagem from './Mensagem'
 import ResumoConsulta from './ResumoConsulta'
@@ -22,21 +24,38 @@ type Tela = 'inicio' | 'codigo' | 'confirmar' | 'quando' | 'registrado'
 interface DosePendente {
   registro: RegistroDose
   remedio: string
+  periodo: Periodo
+  quantidade: number
 }
 
-const abas: { valor: Aba; nome: string }[] = [
-  { valor: 'hoje', nome: 'Hoje' },
-  { valor: 'clima', nome: 'Clima' },
-  { valor: 'medico', nome: 'Vou ao médico' },
-  { valor: 'cuidador', nome: 'Cuidador' },
+const abas: { valor: Aba; nome: string; figura: NomeFigura }[] = [
+  { valor: 'hoje', nome: 'Hoje', figura: 'comprimido' },
+  { valor: 'clima', nome: 'Clima', figura: 'termometro' },
+  { valor: 'medico', nome: 'Vou ao médico', figura: 'medico' },
+  { valor: 'cuidador', nome: 'Cuidador', figura: 'pessoa' },
 ]
 
-const periodos: { valor: Periodo; nome: string; hora: string }[] = [
-  { valor: 'MANHA', nome: 'Manhã', hora: '8 horas' },
-  { valor: 'ALMOCO', nome: 'Almoço', hora: '12 horas' },
-  { valor: 'TARDE', nome: 'Tarde', hora: '16 horas' },
-  { valor: 'NOITE', nome: 'Noite', hora: '20 horas' },
+const periodos: { valor: Periodo; nome: string; hora: string; figura: NomeFigura }[] = [
+  { valor: 'MANHA', nome: 'Manhã', hora: '8 horas', figura: 'manha' },
+  { valor: 'ALMOCO', nome: 'Almoço', hora: '12 horas', figura: 'almoco' },
+  { valor: 'TARDE', nome: 'Tarde', hora: '16 horas', figura: 'tarde' },
+  { valor: 'NOITE', nome: 'Noite', hora: '20 horas', figura: 'noite' },
 ]
+
+// Figura de cada periodo, para a tela da dose.
+const figuraDoPeriodo: Record<Periodo, NomeFigura> = { MANHA: 'manha', ALMOCO: 'almoco', TARDE: 'tarde', NOITE: 'noite' }
+
+// Quantidades da tela de cadastro: meio, um ou dois.
+const quantidades: { valor: number; nome: string }[] = [
+  { valor: 0.5, nome: 'meio' },
+  { valor: 1, nome: '1' },
+  { valor: 2, nome: '2' },
+]
+
+// Escreve a quantidade por extenso: 0.5 vira "meio".
+function textoQuantidade(valor: number) {
+  return valor === 0.5 ? 'meio' : String(valor)
+}
 
 const botaoVerde =
   'flex min-h-16 w-full items-center justify-center rounded-2xl bg-green-700 px-6 text-2xl font-bold text-white hover:bg-green-800 disabled:opacity-50'
@@ -99,7 +118,12 @@ function AppPaciente({ paciente }: AppPacienteProps) {
         const registros = await listarRegistros(posologia.id)
         for (const registro of registros) {
           if (registro.status === 'SEM_REGISTRO') {
-            novasPendentes.push({ registro, remedio: nome })
+            novasPendentes.push({
+              registro,
+              remedio: nome,
+              periodo: posologia.periodo,
+              quantidade: posologia.quantidadeDose,
+            })
           }
         }
       }
@@ -202,16 +226,24 @@ function AppPaciente({ paciente }: AppPacienteProps) {
       </div>
 
       <div className="min-h-96 space-y-4 p-5">
-        {erro && <Mensagem tipo="erro" texto={erro} />}
+        {erro && (
+          <div className="flex flex-col items-center gap-2">
+            <Figura nome="alerta" tamanho={72} />
+            <Mensagem tipo="erro" texto={erro} />
+          </div>
+        )}
         {aviso && <Mensagem tipo="sucesso" texto={aviso} />}
 
         {aba === 'hoje' && tela === 'inicio' && pendentes.length === 0 && (
           <div className="space-y-4 text-center">
             <BotaoOuvir texto={'Olá, ' + primeiroNome + '. Você não tem dose para registrar agora.'} />
+            <div className="flex justify-center opacity-70">
+              <Figura nome="caixa" tamanho={150} />
+            </div>
             <h2 className="text-3xl font-bold">Olá, {primeiroNome}.</h2>
             <p className="text-xl text-slate-600">Você não tem dose para registrar agora.</p>
-            <button type="button" className={botaoVerde} onClick={() => setTela('codigo')}>
-              Adicionar remédio
+            <button type="button" className={botaoVerde + ' gap-3'} onClick={() => setTela('codigo')}>
+              <Figura nome="caixa" tamanho={44} /> Adicionar remédio
             </button>
           </div>
         )}
@@ -219,15 +251,23 @@ function AppPaciente({ paciente }: AppPacienteProps) {
         {aba === 'hoje' && tela === 'inicio' && pendentes.length > 0 && (
           <div className="space-y-4 text-center">
             <BotaoOuvir texto={'Hora do remédio. ' + pendentes[0].remedio + '. Aperte Tomei.'} />
-            <p className="text-xl font-bold text-slate-600">
-              Hora do remédio · {formatarDataHora(pendentes[0].registro.dataPrevista)}
+            <p className="flex items-center justify-center gap-2 text-xl font-bold text-slate-600">
+              <Figura nome={figuraDoPeriodo[pendentes[0].periodo]} tamanho={40} />
+              {formatarDataHora(pendentes[0].registro.dataPrevista)}
             </p>
-            <h2 className="text-3xl font-bold">{pendentes[0].remedio}</h2>
+            <div className="flex flex-col items-center gap-2 rounded-2xl border-2 border-slate-300 bg-slate-50 p-4">
+              <Figura nome="caixa" tamanho={150} />
+              <h2 className="text-3xl font-bold">{pendentes[0].remedio}</h2>
+              <p className="flex items-center gap-2 text-xl text-slate-600">
+                <Figura nome="comprimido" tamanho={34} /> Quantidade: {textoQuantidade(pendentes[0].quantidade)}
+              </p>
+            </div>
             <button
               type="button"
               onClick={() => confirmar(pendentes[0].registro.id, 'PACIENTE')}
-              className="flex min-h-40 w-full items-center justify-center rounded-3xl bg-green-700 text-5xl font-bold text-white shadow-[0_6px_0_#14532d] hover:bg-green-800"
+              className="flex min-h-40 w-full flex-col items-center justify-center rounded-3xl bg-green-700 text-5xl font-bold text-white shadow-[0_6px_0_#14532d] hover:bg-green-800"
             >
+              <Figura nome="certo" tamanho={60} cor="#ffffff" />
               Tomei
             </button>
             <button
@@ -246,6 +286,9 @@ function AppPaciente({ paciente }: AppPacienteProps) {
         {aba === 'hoje' && tela === 'codigo' && (
           <div className="space-y-4">
             <BotaoOuvir texto="Digite os números do código de barras da caixa do remédio." />
+            <div className="flex justify-center">
+              <Figura nome="caixa" tamanho={130} />
+            </div>
             <h2 className="text-3xl font-bold">Qual é o código de barras da caixa?</h2>
 
             {cameraLigada && <LeitorCamera aoLer={procurar} />}
@@ -268,8 +311,8 @@ function AppPaciente({ paciente }: AppPacienteProps) {
               Buscar
             </button>
             {navegadorLeCodigo() && !cameraLigada && (
-              <button type="button" className={botaoBranco} onClick={() => setCameraLigada(true)}>
-                Usar a câmera
+              <button type="button" className={botaoBranco + ' gap-3'} onClick={() => setCameraLigada(true)}>
+                <Figura nome="camera" tamanho={40} /> Usar a câmera
               </button>
             )}
             <button type="button" className={botaoBranco} onClick={() => setTela('inicio')}>
@@ -282,15 +325,18 @@ function AppPaciente({ paciente }: AppPacienteProps) {
           <div className="space-y-4 text-center">
             <BotaoOuvir texto={'É este remédio? ' + encontrado.nome} />
             <h2 className="text-3xl font-bold">É este remédio?</h2>
-            <div className="rounded-2xl border-2 border-slate-300 bg-slate-50 p-5">
+            <div className="flex flex-col items-center gap-2 rounded-2xl border-2 border-slate-300 bg-slate-50 p-5">
+              <Figura nome="caixa" tamanho={150} />
               <p className="text-3xl font-bold">{encontrado.nome}</p>
               <p className="text-xl text-slate-600">{encontrado.principioAtivo}</p>
             </div>
             <div className="flex gap-3">
-              <button type="button" className={botaoVerde} onClick={() => setTela('quando')}>
+              <button type="button" className={botaoVerde + ' min-h-28 flex-col'} onClick={() => setTela('quando')}>
+                <Figura nome="certo" tamanho={44} cor="#ffffff" />
                 Sim
               </button>
-              <button type="button" className={botaoBranco} onClick={() => setTela('codigo')}>
+              <button type="button" className={botaoBranco + ' min-h-28 flex-col'} onClick={() => setTela('codigo')}>
+                <Figura nome="errado" tamanho={44} />
                 Não
               </button>
             </div>
@@ -309,10 +355,11 @@ function AppPaciente({ paciente }: AppPacienteProps) {
                   aria-pressed={periodo === item.valor}
                   onClick={() => setPeriodo(item.valor)}
                   className={
-                    'rounded-2xl p-3 text-center ' +
+                    'flex flex-col items-center rounded-2xl p-3 text-center ' +
                     (periodo === item.valor ? 'border-4 border-green-700 bg-green-50' : 'border-2 border-slate-300 bg-white')
                   }
                 >
+                  <Figura nome={item.figura} tamanho={60} />
                   <span className="block text-xl font-bold">{item.nome}</span>
                   <span className="block text-slate-600">{item.hora}</span>
                 </button>
@@ -322,18 +369,22 @@ function AppPaciente({ paciente }: AppPacienteProps) {
             <h3 className="text-2xl font-bold">Quantos de cada vez?</h3>
             <p className="text-lg text-slate-600">Marque como o médico receitou.</p>
             <div className="flex gap-3">
-              {[1, 2, 3].map((numero) => (
+              {quantidades.map((item) => (
                 <button
-                  key={numero}
+                  key={item.valor}
                   type="button"
-                  aria-pressed={quantidade === numero}
-                  onClick={() => setQuantidade(numero)}
+                  aria-pressed={quantidade === item.valor}
+                  onClick={() => setQuantidade(item.valor)}
                   className={
-                    'min-h-16 flex-1 rounded-2xl text-2xl font-bold ' +
-                    (quantidade === numero ? 'border-4 border-green-700 bg-green-50' : 'border-2 border-slate-300 bg-white')
+                    'flex min-h-24 flex-1 flex-col items-center justify-center rounded-2xl text-xl font-bold ' +
+                    (quantidade === item.valor ? 'border-4 border-green-700 bg-green-50' : 'border-2 border-slate-300 bg-white')
                   }
                 >
-                  {numero}
+                  <span className="flex">
+                    <Figura nome="comprimido" tamanho={item.valor === 2 ? 34 : 44} />
+                    {item.valor === 2 && <Figura nome="comprimido" tamanho={34} />}
+                  </span>
+                  {item.nome}
                 </button>
               ))}
             </div>
@@ -349,9 +400,9 @@ function AppPaciente({ paciente }: AppPacienteProps) {
             <BotaoOuvir texto={'Registrado às ' + horaRegistro + '.'} />
             <div
               aria-hidden="true"
-              className="mx-auto flex h-36 w-36 items-center justify-center rounded-full bg-green-700 text-7xl text-white"
+              className="mx-auto flex h-36 w-36 items-center justify-center rounded-full bg-green-700"
             >
-              ✓
+              <Figura nome="certo" tamanho={96} cor="#ffffff" />
             </div>
             <h2 className="text-3xl font-bold">Registrado às {horaRegistro}.</h2>
             <button type="button" className={botaoBranco} onClick={() => setTela('inicio')}>
@@ -368,7 +419,9 @@ function AppPaciente({ paciente }: AppPacienteProps) {
             />
             <BotaoOuvir texto="Vai fazer muito calor. Beba mais água. Fique na sombra das 10 às 16. Se sentir tontura, procure ajuda. Este aviso não muda a sua receita." />
             <div className="space-y-3 rounded-3xl border-4 border-red-600 bg-red-50 p-4">
-              <p className="font-bold text-red-700">AMANHÃ · 35 °C</p>
+              <p className="flex items-center gap-3 font-bold text-red-700">
+                <Figura nome="termometro" tamanho={64} /> AMANHÃ · 35 °C
+              </p>
               <h2 className="text-3xl font-bold">Vai fazer muito calor.</h2>
               <p className="text-xl">Para quem toma o seu remédio, calor forte pede cuidado.</p>
               <ul className="list-disc space-y-1 pl-6 text-xl font-bold">
@@ -389,7 +442,9 @@ function AppPaciente({ paciente }: AppPacienteProps) {
         {aba === 'medico' && (
           <div className="space-y-4">
             <BotaoOuvir texto="Relatório para o médico. Mostra as doses registradas e o que fugiu do normal." />
-            <p className="font-bold text-slate-600">PARA O MÉDICO</p>
+            <p className="flex items-center gap-3 font-bold text-slate-600">
+              <Figura nome="medico" tamanho={56} /> PARA O MÉDICO
+            </p>
             <h2 className="text-3xl font-bold">{paciente.nome}</h2>
             <ResumoConsulta posologias={posologias} nomeDoMedicamento={nomeDoMedicamento} versao={versao} />
             <p className="text-slate-600">Doses sem registro não contam como tomadas.</p>
@@ -408,8 +463,14 @@ function AppPaciente({ paciente }: AppPacienteProps) {
                 key={pendente.registro.id}
                 className="space-y-3 rounded-3xl border-4 border-violet-600 bg-violet-50 p-4"
               >
-                <h2 className="text-2xl font-bold">{primeiroNome} não registrou a dose.</h2>
-                <p className="text-2xl font-bold">{pendente.remedio}</p>
+                <div className="flex items-center gap-3">
+                  <Figura nome="pessoa" tamanho={56} />
+                  <h2 className="text-2xl font-bold">{primeiroNome} não registrou a dose.</h2>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Figura nome="caixa" tamanho={90} />
+                  <p className="text-2xl font-bold">{pendente.remedio}</p>
+                </div>
                 <p className="text-xl text-slate-600">
                   prevista para {formatarDataHora(pendente.registro.dataPrevista)}
                 </p>
@@ -433,8 +494,12 @@ function AppPaciente({ paciente }: AppPacienteProps) {
             type="button"
             aria-pressed={aba === item.valor}
             onClick={() => trocarAba(item.valor)}
-            className={'min-h-14 px-1 py-2 text-sm font-bold ' + (aba === item.valor ? 'text-green-700' : 'text-slate-600')}
+            className={
+              'flex min-h-20 flex-col items-center justify-center gap-1 px-1 py-2 text-sm font-bold ' +
+              (aba === item.valor ? 'bg-green-50 text-green-700' : 'text-slate-600')
+            }
           >
+            <Figura nome={item.figura} tamanho={32} />
             {item.nome}
           </button>
         ))}
