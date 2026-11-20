@@ -26,6 +26,13 @@ const passos: { titulo: string; texto: string; figura: NomeFigura }[] = [
   },
 ]
 
+const acessibilidade: string[] = [
+  'Frases curtas, sem palavra difícil.',
+  'Botões grandes, fáceis de tocar no celular.',
+  'Botão "Ouvir" que lê o texto em voz alta.',
+]
+
+
 function Home() {
   return (
     <div className="space-y-10">
@@ -90,6 +97,23 @@ function Home() {
           Abra um paciente para ver esse resumo montado com os dados reais da API.
         </p>
       </section>
+
+      <section className="rounded-2xl border-2 border-slate-300 bg-white p-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <h2 className="text-2xl font-bold text-slate-900">Feito para quem lê com dificuldade</h2>
+          <div>
+            <BotaoOuvir texto={'Feito para quem lê com dificuldade. ' + acessibilidade.join(' ')} />
+          </div>
+        </div>
+        <ul className="mt-4 grid gap-3 sm:grid-cols-3">
+          {acessibilidade.map((item) => (
+            <li key={item} className="rounded-2xl bg-green-50 p-4 text-lg font-semibold">
+              {item}
+            </li>
+          ))}
+        </ul>
+      </section>
+
 
       <section className="rounded-2xl border-2 border-amber-600 bg-amber-50 p-6">
         <h2 className="text-xl font-bold">Importante</h2>
