@@ -12,6 +12,13 @@ interface Ganho {
   texto: string
 }
 
+interface Ods {
+  numero: number
+  nome: string
+  texto: string
+}
+
+
 // Personas ficticias, criadas pelo grupo para representar o publico do projeto.
 const personas: Persona[] = [
   {
@@ -47,6 +54,24 @@ const propostas: string[] = [
   'Cadastro do remédio pelo código de barras, com figuras no lugar de texto longo.',
   'Avisos em dias de calor, frio ou chuva forte, para quem toma remédios sensíveis ao clima.',
   'Relatório para o médico, só com o que fugiu do normal no período.',
+]
+
+const objetivos: Ods[] = [
+  {
+    numero: 3,
+    nome: 'Saúde e Bem-Estar',
+    texto: 'Ajuda o paciente a seguir o tratamento combinado com o médico e leva dados reais para a consulta.',
+  },
+  {
+    numero: 10,
+    nome: 'Redução das Desigualdades',
+    texto: 'Frases curtas, figuras grandes e o botão "Ouvir" incluem quem lê com dificuldade.',
+  },
+  {
+    numero: 13,
+    nome: 'Ação Contra a Mudança Global do Clima',
+    texto: 'Avisa o paciente em dias de calor, frio ou chuva forte, quando o cuidado precisa de mais atenção.',
+  },
 ]
 
 const regras: string[] = [
@@ -147,6 +172,21 @@ function Sobre() {
           ))}
         </ol>
       </section>
+      
+      <section>
+        <h2 className="mb-4 text-2xl font-bold text-slate-900">Objetivos de Desenvolvimento Sustentável</h2>
+        <p className="mb-4 text-lg">O projeto se conecta a três ODS da Agenda 2030 da ONU.</p>
+        <div className="grid gap-4 md:grid-cols-3">
+          {objetivos.map((ods) => (
+            <article key={ods.numero} className="rounded-2xl border-2 border-slate-300 bg-white p-6">
+              <p className="text-4xl font-bold text-green-700">ODS {ods.numero}</p>
+              <h3 className="mt-1 text-xl font-bold">{ods.nome}</h3>
+              <p className="mt-2 text-slate-600">{ods.texto}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
 
       <section className="rounded-2xl border-2 border-amber-600 bg-amber-50 p-6">
         <h2 className="text-xl font-bold">Regras que o app sempre segue</h2>
