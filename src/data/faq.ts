@@ -49,4 +49,15 @@ export const perguntas: Pergunta[] = [
     resposta:
       'Tem dois sentidos. O primeiro: chegar à consulta preparado, com o histórico das doses em mãos. O segundo: o app considera o clima do dia no cuidado com o tratamento.',
   },
+    {
+    pergunta: 'O que o cuidador precisa fazer?',
+    resposta:
+      'Quase nada no dia a dia. O cuidador só recebe aviso quando uma dose fica 90 minutos sem registro. Ele pode ligar para o paciente e, se a dose foi tomada, tocar em "Tomou, confirmei". Não precisa ficar conferindo o app toda hora.',
+  },
+  {
+    pergunta: 'Quanto custa? Quem paga?',
+    resposta:
+      'O Tomei, Doutor é um projeto acadêmico da Global Solution FIAP. Este protótipo é gratuito para quem usa. O app não vende remédio e não indica marca nem farmácia.',
+  },
+
 ]
